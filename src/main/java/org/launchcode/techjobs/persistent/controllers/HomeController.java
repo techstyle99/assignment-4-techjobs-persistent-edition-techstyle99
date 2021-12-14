@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by LaunchCode
@@ -22,93 +23,58 @@ import java.util.List;
 public class HomeController {
 
     @Autowired
-    EmployerRepository employerRepository;
+    private EmployerRepository employerRepository;
 
     @Autowired
-    JobRepository jobRepository;
+    private SkillRepository skillRepository;
 
     @Autowired
-    SkillRepository skillRepository;
+    private JobRepository jobRepository;
 
     @RequestMapping("")
     public String index(Model model) {
+
         model.addAttribute("title", "My Jobs");
         model.addAttribute("jobs", jobRepository.findAll());
+
         return "index";
     }
 
     @GetMapping("add")
     public String displayAddJobForm(Model model) {
-
         model.addAttribute("title", "Add Job");
-        model.addAttribute("job", new Job());
-
-        List<Skill> allSkills = (List <Skill>) skillRepository.findAll();
-        model.addAttribute("allSkills", allSkills);
-
-        List<Employer> allEmployers = (List<Employer>) employerRepository.findAll();
-        model.addAttribute("allEmployers", allEmployers);
-
+        model.addAttribute("employers", employerRepository.findAll());
+        model.addAttribute("skills", skillRepository.findAll());
+        model.addAttribute(new Job());
         return "add";
     }
 
     @PostMapping("add")
-    public String processAddJobForm(
-            @ModelAttribute @Valid Job newJob,
-            Errors errors,
-            Model model,
-            @RequestParam int employerId,
-            @RequestParam List<Integer> skills) {
-
-        // validation
-        if (skills.isEmpty())  {
-            errors.rejectValue("skills", "skills.invalidskills",
-                    "At least one skill must be chosen.");
-        }
-
-        if (employerId == 0) {
-            errors.rejectValue("employer", "employer.invalidemployer",
-                    "An employer must be chosen.");
-        }
+    public String processAddJobForm(@ModelAttribute @Valid Job newJob,
+                                    Errors errors, Model model, @RequestParam int employerId, @RequestParam List<Integer> skills) {
 
         if (errors.hasErrors()) {
-            model.addAttribute("title", "Add Job");
-
-            List<Skill> allSkills = (List<Skill>) skillRepository.findAll();
-            model.addAttribute("allSkills", allSkills);
-
-            List<Employer> allEmployers = (List<Employer>) employerRepository.findAll();
-            model.addAttribute("allEmployers", allEmployers);
-
-            model.addAttribute("employerId", employerId);
-
             return "add";
         }
 
-        Employer employer = employerRepository.findById(employerId).orElse(new Employer());
+        Optional optEmployer = employerRepository.findById(employerId);
+
+        if (optEmployer.isPresent()) {
+            Employer employer = (Employer) optEmployer.get();
+            newJob.setEmployer(employer);
+        }
 
         List<Skill> skillObjs = (List<Skill>) skillRepository.findAllById(skills);
+        newJob.setSkills(skillObjs);
 
-        newJob.setSkills((List<Skill>) skillObjs);
-        newJob.setEmployer(employer);
         jobRepository.save(newJob);
-
-        model.addAttribute("job", newJob);
-        model.addAttribute("title", "Job: " + newJob.getName());
-        return "view";
-
+        return "redirect:";
     }
 
     @GetMapping("view/{jobId}")
     public String displayViewJob(Model model, @PathVariable int jobId) {
-        model.addAttribute("job", jobRepository.findById(jobId).get());
         return "view";
     }
 
-    @GetMapping("list-jobs")
-    public String displayListJobs(Model model) {
-        model.addAttribute("jobs", jobRepository.findAll());
-        return "list-jobs";
-    }
 
 }

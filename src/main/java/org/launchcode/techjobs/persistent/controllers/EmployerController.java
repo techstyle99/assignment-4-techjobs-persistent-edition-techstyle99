@@ -16,7 +16,7 @@ import java.util.Optional;
 public class EmployerController {
 
     @Autowired
-    EmployerRepository employerRepository;
+    private EmployerRepository employerRepository;
 
     @GetMapping("")
     public String index(Model model) {
@@ -44,7 +44,7 @@ public class EmployerController {
     @GetMapping("view/{employerId}")
     public String displayViewEmployer(Model model, @PathVariable int employerId) {
 
-        Optional<Employer> optEmployer = employerRepository.findById(employerId);
+        Optional optEmployer = employerRepository.findById(employerId);
         if (optEmployer.isPresent()) {
             Employer employer = (Employer) optEmployer.get();
             model.addAttribute("employer", employer);
