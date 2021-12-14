@@ -14,8 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TestTaskOne extends AbstractTest{
 
     /*
-    * Check application.properties for the correct db connection data
-    * */
+     * Check application.properties for the correct db connection data
+     * */
     @Test
     public void testDbConnectionProperties () throws IOException {
         String propsFileContents = getFileContents("src/main/resources/application.properties");
@@ -37,8 +37,8 @@ public class TestTaskOne extends AbstractTest{
     }
 
     /*
-    * Check build.gradle for the required database dependencies
-    * */
+     * Check build.gradle for the required database dependencies
+     * */
     @Test
     public void testDbGradleDependencies () throws IOException {
         String gradleFileContents = getFileContents("build.gradle");
